@@ -21,7 +21,7 @@ module VanclueverHello
     def self.run_server
       set :bind, '0.0.0.0'
 
-      get '/' do
+      get(/.*/) do
         "Hello from #{Socket.gethostname}!!!"
       end
 
