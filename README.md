@@ -27,6 +27,13 @@ following locations:
    * `terraform/with_ssl` sets up the ASG with a SSL ALB. You need an IAM or ACM
      certificite and a Route 53 hosted zone to run this example.
 
+The project uses 4 Terraform modules:
+
+ * [`terraform_aws_vpc`](https://github.com/paybyphone/terraform_aws_vpc)
+ * [`terraform_aws_alb`](https://github.com/paybyphone/terraform_aws_alb)
+ * [`terraform_aws_asg`](https://github.com/paybyphone/terraform_aws_asg)
+ * [`terraform_aws_security_group`](https://github.com/paybyphone/terraform_aws_security_group)
+
 ## The `Rakefile`
 
 The `Rakefile` has tasks for managing the full lifecycle from building of the
