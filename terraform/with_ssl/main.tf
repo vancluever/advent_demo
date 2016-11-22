@@ -30,6 +30,21 @@ variable "public_subnet_addresses" {
   default = ["10.0.0.0/25", "10.0.0.128/25"]
 }
 
+// The hostname for your TLS endpoint.
+variable "tls_endpoint" {
+  type = "string"
+}
+
+// The Route 53 zone ID to add the TLS endpoint record to.
+variable "route53_zone_id" {
+  type = "string"
+}
+
+// The ARN for the certificate to load into the ALB (either IAM or ACM).
+variable "certificate_arn" {
+  type = "string"
+}
+
 // vpc creates the VPC that will get created for our project.
 module "vpc" {
   source                  = "github.com/paybyphone/terraform_aws_vpc?ref=v0.1.0"
@@ -40,9 +55,12 @@ module "vpc" {
 
 // alb creates the ALB that will get created for our project.
 module "alb" {
-  source              = "github.com/paybyphone/terraform_aws_alb?ref=v0.1.0"
-  listener_subnet_ids = ["${module.vpc.public_subnet_ids}"]
-  project_path        = "${var.project_path}"
+  source                   = "github.com/paybyphone/terraform_aws_alb?ref=v0.1.0"
+  listener_subnet_ids      = ["${module.vpc.public_subnet_ids}"]
+  listener_port            = "443"
+  listener_protocol        = "HTTPS"
+  listener_certificate_arn = "${var.certificate_arn}"
+  project_path             = "${var.project_path}"
 }
 
 // autoscaling_group creates the autoscaling group that will get created for
@@ -60,6 +78,20 @@ module "autoscaling_group" {
   project_path     = "${var.project_path}"
 }
 
+// route53_tls_endpoint_record creates a alias record set for the TLS
+// endpoint within the supplied Route 53 zone ID.
+resource "aws_route53_record" "route53_tls_endpoint_record" {
+  zone_id = "${var.route53_zone_id}"
+  name    = "${var.tls_endpoint}"
+  type    = "A"
+
+  alias {
+    name                   = "${module.alb.alb_dns_name}"
+    zone_id                = "${module.alb.alb_zone_id}"
+    evaluate_target_health = true
+  }
+}
+
 output "alb_hostname" {
-  value = "${module.alb.alb_dns_name}"
+  value = "${var.tls_endpoint}"
 }

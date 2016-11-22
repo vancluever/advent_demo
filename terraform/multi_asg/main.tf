@@ -45,19 +45,38 @@ module "alb" {
   project_path        = "${var.project_path}"
 }
 
-// autoscaling_group creates the autoscaling group that will get created for
-// our project.
+// autoscaling_group_foo creates the autoscaling group that will get created
+// for our project.
 //
-// The ALB is also attached to this autoscaling group with the default /*
+// This ALB is also attached to this autoscaling group with the /foo/*
 // path pattern.
-module "autoscaling_group" {
-  source           = "github.com/paybyphone/terraform_aws_asg?ref=v0.1.1"
-  subnet_ids       = ["${module.vpc.public_subnet_ids}"]
-  image_tag_value  = "vancluever_hello"
-  enable_alb       = "true"
-  alb_listener_arn = "${module.alb.alb_listener_arn}"
-  alb_service_port = "4567"
-  project_path     = "${var.project_path}"
+module "autoscaling_group_foo" {
+  source            = "github.com/paybyphone/terraform_aws_asg?ref=v0.1.1"
+  subnet_ids        = ["${module.vpc.public_subnet_ids}"]
+  image_tag_value   = "vancluever_hello"
+  enable_alb        = "true"
+  alb_listener_arn  = "${module.alb.alb_listener_arn}"
+  alb_rule_number   = "100"
+  alb_path_patterns = ["/foo/*"]
+  alb_service_port  = "4567"
+  project_path      = "${var.project_path}"
+}
+
+// autoscaling_group_bar creates the autoscaling group that will get created
+// for our project.
+//
+// This ALB is also attached to this autoscaling group with the /bar/*
+// path pattern.
+module "autoscaling_group_bar" {
+  source            = "github.com/paybyphone/terraform_aws_asg?ref=v0.1.1"
+  subnet_ids        = ["${module.vpc.public_subnet_ids}"]
+  image_tag_value   = "vancluever_hello"
+  enable_alb        = "true"
+  alb_listener_arn  = "${module.alb.alb_listener_arn}"
+  alb_rule_number   = "101"
+  alb_path_patterns = ["/bar/*"]
+  alb_service_port  = "4567"
+  project_path      = "${var.project_path}"
 }
 
 output "alb_hostname" {
