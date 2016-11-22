@@ -43,6 +43,15 @@ def tf_cmd
   end
 end
 
+# Return a default Terraform directory if not defined
+def tf_dir
+  if ENV.include?('TF_DIR')
+    ENV['TF_DIR']
+  else
+    'terraform'
+  end
+end
+
 # Get an ubuntu AMI ID to build off of (for Packer)
 def ubuntu_ami_id
   Ubuntu.release(distro).amis.find do |ami|
@@ -68,7 +77,7 @@ end
 
 desc 'Gets Terraform modules'
 task :tf_modules do
-  sh 'terraform get -update terraform'
+  sh "terraform get -update #{tf_dir}"
 end
 
 desc 'Create an application AMI with Packer'
@@ -83,7 +92,7 @@ end
 desc 'Deploy infrastructure using Terraform'
 task :infrastructure => [:tf_modules] do
   sh "AWS_DEFAULT_REGION=#{region} \
-   terraform #{tf_cmd} terraform"
+   terraform #{tf_cmd} #{tf_dir}"
 end
 
 desc 'Run test-kitchen on packer_payload cookbook'
