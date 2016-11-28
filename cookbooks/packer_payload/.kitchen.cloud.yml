@@ -20,17 +20,12 @@ driver_config:
   aws_ssh_key_id: chef-kitchen-test-aws
   instance_type: t2.medium
 
-transport:
-  username: <%= ENV['AWS_KITCHEN_USER'] %>
-
 provisioner:
   name: chef_zero
   data_path: ../../pkg/
 
 platforms:
-  - name: aws
-    driver:
-      image_id: <%= ENV['AWS_KITCHEN_AMI_ID'] %>
+  - name: ubuntu-16.04
 
 suites:
   - name: default

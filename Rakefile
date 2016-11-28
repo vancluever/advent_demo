@@ -16,15 +16,6 @@ require 'bundler/gem_tasks'
 require 'ubuntu_ami'
 require 'vancluever_hello/version'
 
-# Return a default distro if not defined
-def distro
-  if ENV.include?('DISTRO')
-    ENV['DISTRO']
-  else
-    'xenial'
-  end
-end
-
 # Return a default region if not defined
 def region
   if ENV.include?('REGION')
@@ -52,16 +43,6 @@ def tf_dir
   end
 end
 
-# Get an ubuntu AMI ID to build off of (for Packer)
-def ubuntu_ami_id
-  Ubuntu.release(distro).amis.find do |ami|
-    ami.arch == 'amd64' &&
-      ami.root_store == 'ebs-ssd' &&
-      ami.virtualization_type == 'hvm' &&
-      ami.region == region
-  end.name
-end
-
 # Make sure I don't release/push this to rubygems by mistake
 Rake::Task['release'].clear
 
@@ -82,9 +63,7 @@ end
 
 desc 'Create an application AMI with Packer'
 task :ami => [:build, :berks_cookbooks] do
-  sh "DISTRO=#{distro} \
-   SRC_AMI=#{ubuntu_ami_id} \
-   SRC_REGION=#{region} \
+  sh "SRC_REGION=#{region} \
    APP_VERSION=#{VanclueverHello::VERSION} \
    packer build packer/ami.json"
 end
@@ -99,9 +78,7 @@ desc 'Run test-kitchen on packer_payload cookbook'
 task :kitchen do
   sh "cd cookbooks/packer_payload && \
    KITCHEN_YAML=.kitchen.cloud.yml \
-   AWS_KITCHEN_AMI_ID=#{ubuntu_ami_id} \
-   AWS_KITCHEN_USER=ubuntu \
    AWS_REGION=#{region} \
    KITCHEN_APP_VERSION=#{VanclueverHello::VERSION} \
-   kitchen test"
+   kitchen test -d always"
 end
